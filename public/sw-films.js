@@ -1,4 +1,7 @@
-const versionCache = '2';
+importScripts('/src/js/librairie/idb.js');
+importScripts('/src/js/librairie/idb-operations.js');
+
+const versionCache = '4';
 const NOM_CACHE_STATIQUE = `cache-statique-${versionCache}`;
 const NOM_CACHE_DYNAMIQUE = `cache-dynamique-${versionCache}`;
 
@@ -16,7 +19,9 @@ const ressources = [
   'src/css/style.css', 
 
   'src/js/vueFilms.js',
-  'src/js/sw-enregistrer.js'
+  'src/js/sw-enregistrer.js',
+  'src/js/bdfilms.js',
+  'src/js/bdfilms.json'
 
 ];
 
@@ -80,25 +85,43 @@ self.addEventListener('activate', function(event) {
 // });
 
 //Plus court
-self.addEventListener("fetch", event => {
-  event.respondWith(
-    caches.match(event.request).then(response => {
-      return (
-        // Si dans le cache statique alors le retourner  
-        response ||
-        // sinon, prenez la réponse de la demande, ouvrez le cache dynamique 
-        //et stockez-y la réponse
-        // on utilise resp puisque response est déjà utilisé
-        fetch(event.request).then(resp => { 
-          return caches.open(NOM_CACHE_DYNAMIQUE).then(cache => {
-            // vous devez stoker absolument un clone de la réponse soit resp
-            cache.put(event.request.url, resp.clone());
-            // puis renvoyez la demande d'origine au navigateur
-            return resp;
-          });
-        })
-      );
-    }).catch(err => {})
-  );
-});
   
+self.addEventListener("fetch", event => {
+  let url = 'http://localhost:8081/src/js/bdfilms.json';
+  if (event.request.url.indexOf(url) > -1) {
+    event.respondWith(fetch(event.request)
+      .then((resp) => {
+        var cloneResp = resp.clone();
+        cloneResp.json()
+          .then((donnees) => {
+            for (var film of donnees) {
+              enregistrer('films', film);
+            }
+            return resp;
+          })
+          return resp;
+      })
+    )
+  }
+  else{ 
+      event.respondWith(
+      caches.match(event.request).then(response => {
+        return (
+          // Si dans le cache statique alors le retourner  
+          response ||
+          // sinon, prenez la réponse de la demande, ouvrez le cache dynamique 
+          //et stockez-y la réponse
+          // on utilise resp puisque response est déjà utilisé
+          fetch(event.request).then(resp => { 
+            return caches.open(NOM_CACHE_DYNAMIQUE).then(cache => {
+              // vous devez stoker absolument un clone de la réponse soit resp
+              cache.put(event.request.url, resp.clone());
+              // puis renvoyez la demande d'origine au navigateur
+              return resp;
+            });
+          })
+        );
+      }).catch(err => {})
+    );
+    }
+});

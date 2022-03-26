@@ -7,16 +7,16 @@ let montrerBandeAnnonce = (preview) => {
     $('#modalBA').modal('show');
 }
 
-let enleverCard = (idCard) => {
-    document.getElementById(idCard).style.display = 'none';
-    document.getElementById(idCard).remove();
-}
+// let enleverCard = (idCard) => {
+//     document.getElementById(idCard).style.display = 'none';
+//     document.getElementById(idCard).remove();
+// }
 
 let creerCard = (unFilm) => {
     let uneCard = `
     <div class="col" id=${unFilm.id}>
         <div class="card  h-100 w-80" >
-        <img src="${unFilm.posterUrl}" onerror="enleverCard(${unFilm.id});" 
+        <img src="${unFilm.posterUrl}" 
         class="card-img-top asRatio" width=318 height=471>
         <div class="card-body">
             <h4 class="card-title">${unFilm.title}</h4>

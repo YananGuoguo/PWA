@@ -1,10 +1,13 @@
 var vueListeFilms="";
 
-async function listeFilms(par){
-    if (par==="fetch"){
-        await getFilms().then(reponse => {tabFilms=reponse});
-        console.log(tabFilms);
-    }
+async function listeFilms(){
+
+    console.log("listeFilms")
+        await getFilms().then(reponse => {
+            tabFilms=reponse
+        });
+        console.log("tabFilms",tabFilms);
+    
 for(unFilm of tabFilms){
 vueListeFilms += '<div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--4-col-phone mdl-card mdl-shadow--3dp">'+
 '              <div class="mdl-card__media">'+
