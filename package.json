@@ -3,13 +3,21 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "http-server -c-1"
+    "start": "http-server -c-1",
+    "web-push": "web-push"
   },
   "author": "Yanan",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.19.2",
+    "express": "^4.17.3",
+    "fs": "^0.0.1-security",
+    "http": "^0.0.1-security",
     "http-server": "^14.1.0",
-    "idb": "^7.0.1"
+    "idb": "^7.0.1",
+    "loadash": "^1.0.0",
+    "path": "^0.12.7",
+    "web-push": "^3.4.5"
   },
   "description": ""
 }
