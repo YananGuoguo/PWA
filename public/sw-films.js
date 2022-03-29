@@ -5,6 +5,16 @@ const versionCache = '4';
 const NOM_CACHE_STATIQUE = `cache-statique-${versionCache}`;
 const NOM_CACHE_DYNAMIQUE = `cache-dynamique-${versionCache}`;
 
+//Création de la bd et des différents stores. Si déjà fait il les ouvre simplement
+//et donc accessibles au SW pour les oérations via le fichier idb-operations.js
+//Même primcipe du côté de l'applications. Ne pas oubleir qu'ils fonctionnent dur 
+//deux «threds» différents.
+
+let infosBD={'bd':'bdfilms', 'stores':[{'st':'films','id':'id'},{'st':'sync-films','id':'id'}]};
+var dbPromise=creerBD(infosBD);//on aura un dbPromise disponible dans le «Thread» du SW et ainsi les
+                              //les opérations sur la BD seront disponibles.
+
+
 //Ressources statiques pour mettre en cache
 const ressources = [
   '/',
@@ -21,7 +31,8 @@ const ressources = [
   'src/js/vueFilms.js',
   'src/js/sw-enregistrer.js',
   'src/js/bdfilms.js',
-  'src/js/bdfilms.json'
+  'src/js/bdfilms.json',
+  'src/js/jquery-3.5.1.min.js',
 
 ];
 
@@ -95,7 +106,7 @@ self.addEventListener("fetch", event => {
         cloneResp.json()
           .then((donnees) => {
             for (var film of donnees) {
-              enregistrer('films', film);
+              enregistrer('films', film);//cet appel à besoin de dbPromise
             }
             return resp;
           })
@@ -124,4 +135,91 @@ self.addEventListener("fetch", event => {
       }).catch(err => {})
     );
     }
+});
+
+
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'sync-nouveau-film') {
+    console.log('[Service Worker] sync nouveau film');
+    event.waitUntil(
+      contenuStore('sync-films')
+        .then((listeFilms) =>  {
+          for (var unFilm of listeFilms) {console.log("En SW");console.log(JSON.stringify(unFilm));
+            fetch('/enregistrer', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify(unFilm)
+            })
+              .then((res) => {
+                
+                console.log("response 在sw-films.js中：：",res);
+                //afficherDansListeFilms(leFilmEnregistre);
+                if (res.ok) {
+                  //supprimerElement('sync-films',unFilm.NumFilm);
+                }
+              })
+              .catch((err) => {
+                console.error('Erreur avec envoyer les données', err);
+              });
+          }
+
+        })
+    );
+  }
+});
+
+//Pour les notifications
+self.addEventListener('notificationclick', (event) => {
+  var notification = event.notification;
+  var action = event.action;
+
+  console.log("notification:", notification);
+
+  if (action === 'accepter') {
+    console.log('Vous avez choisi accepter');
+  } else if (action === 'infos'){
+      event.waitUntil(
+        clients.matchAll()
+          .then((cls) => {
+            var client = cls.find((c) => {
+              return c.visibilityState === 'visible';
+            });
+
+            if (client !== undefined) {
+              client.navigate(notification.data);
+              client.focus();
+            } else {
+              client.openWindow(notification.data);
+            }
+            notification.close();
+          })
+      );
+  }
+  else {
+    console.log(action);
+  }
+  notification.close();
+});
+
+//Push Notifications
+self.addEventListener('push', (event) => {
+  const obj = event.data.json();
+  
+  const options = {
+    body: obj.content,
+    data: obj.url,
+    icon: '/src/images/icons/icon-96x96.png',
+    badge: '/src/images/icons/icon-96x96.png',
+    actions: [
+            { action: 'infos', title: 'Infos', icon: '/src/images/icons/icon-96x96.png'}
+          ]
+  };
+  event.waitUntil(self.registration.showNotification(obj.title, options));
+});
+
+self.addEventListener('notificationclose', (event) => {
+  console.log('Notification fermée', event);
 });
