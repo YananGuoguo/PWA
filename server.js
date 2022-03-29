@@ -37,9 +37,9 @@ app.post('/enregistrer',(req, res) => {
 			  CheminPochette:"src/images/pochettes/Doubtfire.jpg"
 		   };
 	
-	let cheminFichierFilms=path.join(root_path,"/public/src/donnees/films.json");
+	let cheminFichierFilms=path.join(root_path,"/public/src/js/bdfilms.json");
 	util.sauvegarderDonnees(cheminFichierFilms,film);//chemin et fichier et donnees
-	let cheminFichierAbonnements=path.join(root_path,"/serveur/donnees/abonnements.json");
+	let cheminFichierAbonnements=path.join(root_path,"/serveur/js/abonnements.json");
 	var tabAbonnements = util.listeAbonnements(cheminFichierAbonnements);
 	
 	//Paramètres identifient du la compagnie (dans un vrai contexte fournir une vraie adresse), 
